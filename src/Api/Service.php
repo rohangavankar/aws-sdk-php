@@ -292,11 +292,6 @@ class Service extends AbstractModel
                 $this->definition['operations'][$name],
                 $this->shapeMap
             );
-        } elseif ($this->modifiedModel) {
-            $this->operations[$name] = new Operation(
-                $this->definition['operations'][$name],
-                $this->shapeMap
-            );
         }
 
         return $this->operations[$name];
@@ -526,7 +521,16 @@ class Service extends AbstractModel
     {
         $this->definition = $definition;
         $this->shapeMap = new ShapeMap($definition['shapes']);
+        $this->operations = [];
         $this->modifiedModel = true;
+    }
+
+    /**
+     * @return void
+     */
+    protected function clearResolvedModelCache()
+    {
+        $this->operations = [];
     }
 
     /**

@@ -140,6 +140,16 @@ class Operation extends AbstractModel
         return $this->operationContextParams;
     }
 
+    /**
+     * @return void
+     */
+    protected function clearResolvedModelCache()
+    {
+        $this->input = null;
+        $this->output = null;
+        $this->errors = null;
+    }
+
     private function setContextParams()
     {
         $members = $this->getInput()->getMembers();
