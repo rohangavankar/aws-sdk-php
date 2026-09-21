@@ -12,9 +12,11 @@
  *   php -n -d opcache.enable_cli=1 benchmark/json-serde.php
  *
  * Options:
- *   --implementation=legacy|plans   Which encode path to run (default: both)
+ *   --implementation=legacy|plans   Which path to run (default: both)
  *   --direction=encode|decode       Serde direction (default: encode)
  *   --iterations=200000             Repeated-use sample count
+ *   --items=50                      List/map entry count for collection cases.
+ *                                   0 exercises the small scalar-only path.
  *   --case=NAME                     Run one payload case only
  *
  * Local runs are dev-grade for iterating. Merge evidence requires the x86
@@ -29,10 +31,11 @@ use Aws\Api\Service;
 use Aws\Api\Serializer\JsonBody;
 use Aws\Api\Parser\JsonParser;
 
-$opts = getopt('', ['implementation:', 'direction:', 'iterations:', 'case:']);
+$opts = getopt('', ['implementation:', 'direction:', 'iterations:', 'items:', 'case:']);
 $implementation = $opts['implementation'] ?? 'both';
 $direction      = $opts['direction'] ?? 'encode';
 $iterations     = (int) ($opts['iterations'] ?? 200000);
+$items          = isset($opts['items']) ? (int) $opts['items'] : 50;
 $onlyCase       = $opts['case'] ?? null;
 
 if (!in_array($implementation, ['legacy', 'plans', 'both'], true)) {
@@ -119,8 +122,10 @@ $model = [
 // Representative argument payloads.
 // ---------------------------------------------------------------------------
 
+// --items controls collection sizes. 0 yields empty collections so the run
+// exercises the small scalar-only path (matches the runbook's --items=0 case).
 $nestedItems = [];
-for ($i = 0; $i < 50; $i++) {
+for ($i = 0; $i < $items; $i++) {
     $attrs = [];
     for ($j = 0; $j < 6; $j++) {
         $attrs["attr_$j"] = "value_{$i}_{$j}";
@@ -134,7 +139,7 @@ for ($i = 0; $i < 50; $i++) {
 }
 
 $bigMap = [];
-for ($i = 0; $i < 200; $i++) {
+for ($i = 0; $i < $items * 4; $i++) {
     $bigMap["field_$i"] = "value_$i";
 }
 
@@ -258,7 +263,7 @@ echo "  Arch          : " . php_uname('m') . "\n";
 echo "  OPcache       : " . ($opcacheEnabled ? 'ENABLED' : 'DISABLED') . "\n";
 echo "  Xdebug        : " . ($xdebug ? 'LOADED (timings unreliable)' : 'not loaded') . "\n";
 echo "  Iterations    : " . number_format($iterations) . "\n";
-echo "  Note          : local dev-grade, not merge evidence\n";
+echo "  Items         : " . $items . "\n";
 echo str_repeat('-', 78) . "\n";
 
 $impls = $implementation === 'both' ? ['legacy', 'plans'] : [$implementation];
