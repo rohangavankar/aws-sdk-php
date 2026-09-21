@@ -3,12 +3,10 @@
 /**
  * Focused JSON serde before/after benchmark.
  *
- * Compares the legacy JsonBody::format() path against the compiled-plan
- * JsonBody::build() path in a single process, so before/after numbers come
- * from identical shapes, args, PHP, and settings.
- *
- * Encode is implemented. Decode is added in a later step (--direction=decode
- * will report as pending until then).
+ * Compares the legacy path against the compiled-plan path in a single process,
+ * so before/after numbers come from identical shapes, values, PHP, and
+ * settings. Encode compares JsonBody::buildLegacy() vs build(); decode compares
+ * JsonParser::parseLegacy() vs parse().
  *
  * Run with a clean PHP to avoid Xdebug/JIT skew:
  *   php -n -d opcache.enable_cli=1 benchmark/json-serde.php
@@ -29,6 +27,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Aws\Api\Service;
 use Aws\Api\Serializer\JsonBody;
+use Aws\Api\Parser\JsonParser;
 
 $opts = getopt('', ['implementation:', 'direction:', 'iterations:', 'case:']);
 $implementation = $opts['implementation'] ?? 'both';
@@ -41,9 +40,9 @@ if (!in_array($implementation, ['legacy', 'plans', 'both'], true)) {
     exit(1);
 }
 
-if ($direction === 'decode') {
-    fwrite(STDERR, "Decode benchmark is not implemented yet (JSON decode plans are a later step).\n");
-    exit(2);
+if (!in_array($direction, ['encode', 'decode'], true)) {
+    fwrite(STDERR, "Invalid --direction. Use encode or decode.\n");
+    exit(1);
 }
 
 // ---------------------------------------------------------------------------
@@ -62,9 +61,9 @@ $model = [
         'signatureVersion' => 'v4',
     ],
     'operations' => [
-        'SmallNoList'  => ['name' => 'SmallNoList',  'input' => ['shape' => 'SmallInput']],
-        'NestedLarge'  => ['name' => 'NestedLarge',  'input' => ['shape' => 'NestedInput']],
-        'MapHeavy'     => ['name' => 'MapHeavy',     'input' => ['shape' => 'MapInput']],
+        'SmallNoList'  => ['name' => 'SmallNoList',  'input' => ['shape' => 'SmallInput'],  'output' => ['shape' => 'SmallInput']],
+        'NestedLarge'  => ['name' => 'NestedLarge',  'input' => ['shape' => 'NestedInput'], 'output' => ['shape' => 'NestedInput']],
+        'MapHeavy'     => ['name' => 'MapHeavy',     'input' => ['shape' => 'MapInput'],    'output' => ['shape' => 'MapInput']],
     ],
     'shapes' => [
         // Small, scalar-only structure, no lists (worst case for plans: the
@@ -230,15 +229,19 @@ function measure(callable $fn, int $iterations): array
 }
 
 /**
- * Builds a fresh JsonBody + input shape for a case. A fresh Service means an
- * uncached shape graph, so the first plan build is measured as first-use.
+ * Builds a fresh worker + shape for a case. A fresh Service means an uncached
+ * shape graph, so the first plan build is measured as first-use.
+ *
+ * Encode returns [JsonBody, inputShape]; decode returns [JsonParser, outputShape].
  */
-function makeRunner(array $model, string $operation): array
+function makeRunner(array $model, string $operation, string $direction): array
 {
     $service = new Service($model, function () { return []; });
-    $body = new JsonBody($service);
-    $shape = $service->getOperation($operation)->getInput();
-    return [$body, $shape];
+    $op = $service->getOperation($operation);
+    if ($direction === 'encode') {
+        return [new JsonBody($service), $op->getInput()];
+    }
+    return [new JsonParser(), $op->getOutput()];
 }
 
 // ---------------------------------------------------------------------------
@@ -249,7 +252,7 @@ $opcacheEnabled = function_exists('opcache_get_status')
     && !empty(@opcache_get_status(false)['opcache_enabled']);
 $xdebug = extension_loaded('xdebug');
 
-echo "\n  JSON serde before/after benchmark (encode)\n";
+echo "\n  JSON serde before/after benchmark ($direction)\n";
 echo "  PHP           : " . PHP_VERSION . "\n";
 echo "  Arch          : " . php_uname('m') . "\n";
 echo "  OPcache       : " . ($opcacheEnabled ? 'ENABLED' : 'DISABLED') . "\n";
@@ -265,23 +268,37 @@ foreach ($cases as $name => $case) {
     $op = $case['operation'];
     $args = $case['args'];
 
+    // For decode, the input is a parsed JSON array shaped like the wire body.
+    // Derive it once by encoding the args and decoding back to an array.
+    if ($direction === 'decode') {
+        [$encBody, $encShape] = makeRunner($model, $op, 'encode');
+        $input = json_decode($encBody->build($encShape, $args), true);
+    } else {
+        $input = $args;
+    }
+
     foreach ($impls as $impl) {
-        $method = $impl === 'legacy' ? 'buildLegacy' : 'build';
+        if ($direction === 'encode') {
+            $method = $impl === 'legacy' ? 'buildLegacy' : 'build';
+        } else {
+            $method = $impl === 'legacy' ? 'parseLegacy' : 'parse';
+        }
 
-        // Correctness: legacy and plans must produce identical wire output.
-        [$vBody, $vShape] = makeRunner($model, $op);
-        $wire = $vBody->$method($vShape, $args);
+        // Correctness: legacy and plans must produce identical output.
+        [$vWorker, $vShape] = makeRunner($model, $op, $direction);
+        $out = $vWorker->$method($vShape, $input);
+        $outHash = md5(serialize($out));
 
-        $stats = measure(function (bool $fresh) use ($model, $op, $args, $method, &$sharedBody, &$sharedShape) {
+        $stats = measure(function (bool $fresh) use ($model, $op, $input, $method, $direction, &$sharedWorker, &$sharedShape) {
             if ($fresh) {
-                [$sharedBody, $sharedShape] = makeRunner($model, $op);
+                [$sharedWorker, $sharedShape] = makeRunner($model, $op, $direction);
             }
             $start = hrtime(true);
-            $sharedBody->$method($sharedShape, $args);
+            $sharedWorker->$method($sharedShape, $input);
             return hrtime(true) - $start;
         }, $iterations);
 
-        $results[$name][$impl] = ['stats' => $stats, 'wire' => $wire];
+        $results[$name][$impl] = ['stats' => $stats, 'hash' => $outHash, 'wire' => $out];
     }
 }
 
@@ -289,10 +306,10 @@ foreach ($results as $name => $byImpl) {
     echo "\n  Case: $name\n";
 
     if (isset($byImpl['legacy'], $byImpl['plans'])) {
-        if ($byImpl['legacy']['wire'] !== $byImpl['plans']['wire']) {
-            echo "  !! WIRE MISMATCH between legacy and plans — output differs !!\n";
+        if ($byImpl['legacy']['hash'] !== $byImpl['plans']['hash']) {
+            echo "  !! OUTPUT MISMATCH between legacy and plans — results differ !!\n";
         } else {
-            echo "  wire output identical (" . strlen($byImpl['legacy']['wire']) . " bytes)\n";
+            echo "  output identical between legacy and plans\n";
         }
     }
 
