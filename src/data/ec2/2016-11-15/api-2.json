@@ -48546,7 +48546,10 @@
     },
     "PayerResponsibilityScope":{
       "type":"string",
-      "enum":["vpc-endpoint-charges"]
+      "enum":[
+        "vpc-endpoint-charges",
+        "resource-gateway-charges"
+      ]
     },
     "PayerResponsibilitySet":{
       "type":"list",
@@ -48559,6 +48562,7 @@
       "type":"string",
       "enum":[
         "vpc-endpoint-account",
+        "resource-gateway-account",
         "vpc-endpoint-service-account"
       ]
     },
@@ -59865,7 +59869,8 @@
         "t2",
         "t3",
         "t3a",
-        "t4g"
+        "t4g",
+        "t8i"
       ]
     },
     "UnlockSnapshotRequest":{
@@ -62589,7 +62594,8 @@
         "Gateway",
         "GatewayLoadBalancer",
         "Resource",
-        "ServiceNetwork"
+        "ServiceNetwork",
+        "Tunnel"
       ]
     },
     "VpcFlowLogId":{"type":"string"},
