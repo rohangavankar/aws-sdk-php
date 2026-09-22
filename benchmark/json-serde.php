@@ -18,6 +18,8 @@
  *   --items=50                      List/map entry count for collection cases.
  *                                   0 exercises the small scalar-only path.
  *   --case=NAME                     Run one payload case only
+ *   --mode=time|memory              time = latency; memory = retained plan heap
+ *                                   (both directions, one graph). Default time.
  *
  * Local runs are dev-grade for iterating. Merge evidence requires the x86
  * m7i.xlarge runbook flow in docs/serde/benchmark-runbook.md.
@@ -31,12 +33,18 @@ use Aws\Api\Service;
 use Aws\Api\Serializer\JsonBody;
 use Aws\Api\Parser\JsonParser;
 
-$opts = getopt('', ['implementation:', 'direction:', 'iterations:', 'items:', 'case:']);
+$opts = getopt('', ['implementation:', 'direction:', 'iterations:', 'items:', 'case:', 'mode:']);
 $implementation = $opts['implementation'] ?? 'both';
 $direction      = $opts['direction'] ?? 'encode';
 $iterations     = (int) ($opts['iterations'] ?? 200000);
 $items          = isset($opts['items']) ? (int) $opts['items'] : 50;
 $onlyCase       = $opts['case'] ?? null;
+$mode           = $opts['mode'] ?? 'time';
+
+if (!in_array($mode, ['time', 'memory'], true)) {
+    fwrite(STDERR, "Invalid --mode. Use time or memory.\n");
+    exit(1);
+}
 
 if (!in_array($implementation, ['legacy', 'plans', 'both'], true)) {
     fwrite(STDERR, "Invalid --implementation. Use legacy, plans, or both.\n");
@@ -200,6 +208,17 @@ function fmtNs($ns): string
     return number_format($ns, 0) . ' ns';
 }
 
+function fmtBytes($bytes): string
+{
+    if ($bytes >= 1024 * 1024) {
+        return number_format($bytes / (1024 * 1024), 2) . ' MB';
+    }
+    if ($bytes >= 1024) {
+        return number_format($bytes / 1024, 2) . ' KB';
+    }
+    return number_format($bytes, 0) . ' B';
+}
+
 function pct(float $before, float $after): string
 {
     if ($before <= 0) {
@@ -262,9 +281,55 @@ echo "  PHP           : " . PHP_VERSION . "\n";
 echo "  Arch          : " . php_uname('m') . "\n";
 echo "  OPcache       : " . ($opcacheEnabled ? 'ENABLED' : 'DISABLED') . "\n";
 echo "  Xdebug        : " . ($xdebug ? 'LOADED (timings unreliable)' : 'not loaded') . "\n";
+echo "  Mode          : " . $mode . "\n";
 echo "  Iterations    : " . number_format($iterations) . "\n";
 echo "  Items         : " . $items . "\n";
 echo str_repeat('-', 78) . "\n";
+
+// ---------------------------------------------------------------------------
+// Retained-memory mode.
+//
+// Measures the heap a warmed plan graph retains, per the runbook: read memory
+// after model construction, then after plan creation. The difference is the
+// retained plan payload. Warms encode then decode on the same Service so the
+// number reflects both direction slots on one graph.
+// ---------------------------------------------------------------------------
+if ($mode === 'memory') {
+    foreach ($cases as $name => $case) {
+        $op = $case['operation'];
+        $args = $case['args'];
+
+        // Build the model graph and resolve shapes, but do not compile plans.
+        $service = new Service($model, function () { return []; });
+        $body   = new JsonBody($service);
+        $parser = new JsonParser();
+        $inShape  = $service->getOperation($op)->getInput();
+        $outShape = $service->getOperation($op)->getOutput();
+        $decodeInput = json_decode($body->build($inShape, $args), true);
+        // The line above compiled encode plans as a side effect, so rebuild a
+        // clean graph for an honest before/after around plan creation.
+        $service = new Service($model, function () { return []; });
+        $body   = new JsonBody($service);
+        $parser = new JsonParser();
+        $inShape  = $service->getOperation($op)->getInput();
+        $outShape = $service->getOperation($op)->getOutput();
+
+        gc_collect_cycles();
+        $before = memory_get_usage();
+
+        // Compile and cache plans for both directions across the whole graph.
+        $body->build($inShape, $args);
+        $parser->parse($outShape, $decodeInput);
+
+        gc_collect_cycles();
+        $after = memory_get_usage();
+
+        printf("  %-14s retained: %s (both directions, one graph)\n",
+            $name, fmtBytes($after - $before));
+    }
+    echo "\n" . str_repeat('-', 78) . "\n  Done.\n\n";
+    exit(0);
+}
 
 $impls = $implementation === 'both' ? ['legacy', 'plans'] : [$implementation];
 $results = [];

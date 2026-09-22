@@ -66,3 +66,16 @@ Legacy vs plans compared in one process; output byte-identical in every case.
 - [ ] XML decode (Step R4) — not started
 
 JSON is complete. XML is still open under Rohan's ownership per the work plan.
+
+## Additional evidence (2026-09-22)
+
+- **Retained memory** (`json-memory-and-large-x86-2026-09-22.md`): plan cache is
+  bounded by the model, not payload size (identical at items=50 and items=2000).
+  NestedLarge ~11.7 KB both directions; MapHeavy ~3.9 KB.
+- **Large payload** (same doc): at ~3 ms payloads (2000 items), encode warm p50
+  -37.6%, decode -40.7%, output identical.
+- **Full compliance corpus** (`compliance-corpus-x86-2026-09-22.md`): 70 cases,
+  all 5 protocols, baseline (foundation) vs candidate. JSON RPC weighted p50
+  **-35.9%**; REST-JSON flat (HTTP-binding bound, Lukas's area); control
+  protocols within +-0.3% (no regression). Raw JSON preserved under
+  `x86-compliance-corpus/`.
