@@ -77,6 +77,20 @@ class JsonDecodePlanProviderTest extends TestCase
         $this->assertSame('iso8601', $plan->members[0][JsonDecodePlan::M_TSFORMAT]);
     }
 
+    public function testCompilesRootTimestamp(): void
+    {
+        $provider = new JsonDecodePlanProvider();
+
+        // No explicit format: decode defaults to null (DateTimeResult).
+        $plain = $provider->get($this->shape(['type' => 'timestamp']));
+        $this->assertSame(JsonShapeType::TIMESTAMP, $plain->type);
+        $this->assertNull($plain->timestampFormat);
+
+        // Explicit format is retained on the root plan.
+        $iso = $provider->get($this->shape(['type' => 'timestamp', 'timestampFormat' => 'iso8601']));
+        $this->assertSame('iso8601', $iso->timestampFormat);
+    }
+
     public function testUnionFlagSet(): void
     {
         $provider = new JsonDecodePlanProvider();
