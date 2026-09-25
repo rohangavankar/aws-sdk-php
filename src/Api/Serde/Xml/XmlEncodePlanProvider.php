@@ -43,6 +43,7 @@ final class XmlEncodePlanProvider
         $plan = new XmlEncodePlan();
         $plan->type = XmlShapeType::fromShape($shape);
         $plan->namespace = self::namespaceAttribute($shape);
+        $plan->rootName = self::rootElementName($shape);
 
         switch ($plan->type) {
             case XmlShapeType::STRUCTURE:
@@ -125,6 +126,32 @@ final class XmlEncodePlanProvider
 
         $plan->members = $members;
         $plan->attributeMembers = $attributeMembers;
+    }
+
+    /**
+     * Precomputes the root element name using the current three-level
+     * precedence, reproducing XmlBody::determineRootElementName so the runtime
+     * serializer does not inspect shape metadata to open the document root:
+     *   1. the original ShapeMap target definition's locationName
+     *   2. the resolved shape's locationName
+     *   3. the modeled shape name
+     */
+    private static function rootElementName(Shape $shape): string
+    {
+        $shapeName = $shape->getName();
+
+        if ($shapeName && $shape instanceof StructureShape) {
+            $original = $shape->getOriginalDefinition($shapeName);
+            if (isset($original['locationName'])) {
+                return $original['locationName'];
+            }
+        }
+
+        if ($shape['locationName']) {
+            return $shape['locationName'];
+        }
+
+        return (string) $shapeName;
     }
 
     /**

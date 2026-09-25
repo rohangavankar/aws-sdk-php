@@ -46,14 +46,9 @@ class XmlBody
         $xml->openMemory();
         $xml->startDocument('1.0', 'UTF-8');
 
-        $rootElementName = $this->determineRootElementName($shape);
+        $plan = $this->planProvider->get($shape);
 
-        $this->formatPlan(
-            $this->planProvider->get($shape),
-            $rootElementName,
-            $args,
-            $xml
-        );
+        $this->formatPlan($plan, $plan->rootName, $args, $xml);
         $xml->endDocument();
 
         return $xml->outputMemory();

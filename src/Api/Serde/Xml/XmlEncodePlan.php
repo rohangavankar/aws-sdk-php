@@ -28,8 +28,18 @@ final class XmlEncodePlan
     public const M_ATTRIBUTE = 3; // bool: emit as attribute rather than element
     public const M_NS        = 4; // child namespace attribute [name, uri] or null
 
-    /** @var int XmlShapeType tag for the shape this plan encodes. */
+    /** @var int XmlShapeType tag for the shape this shape encodes. */
     public $type;
+
+    /**
+     * Root element name for this shape, precomputed via the three-level
+     * precedence (ShapeMap original locationName, resolved locationName, shape
+     * name). Lets the serializer open the document root without inspecting shape
+     * metadata at request time. Only meaningful when the shape is used as a root.
+     *
+     * @var string|null
+     */
+    public $rootName;
 
     /**
      * Namespace attribute to emit when this shape opens an element, or null.
