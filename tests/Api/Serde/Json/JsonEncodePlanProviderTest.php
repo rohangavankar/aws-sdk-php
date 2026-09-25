@@ -125,6 +125,6 @@ class JsonEncodePlanProviderTest extends TestCase
         // Same instance returned: compiled once and cached.
         $this->assertSame($first, $second);
         // Stored under the JSON_ENCODE slot.
-        $this->assertSame($first, $shape->getCachedPlan(ShapePlanCache::JSON_ENCODE));
+        $this->assertSame($first, $shape->getSerdePlan(ShapePlanCache::JSON_ENCODE));
     }
 }

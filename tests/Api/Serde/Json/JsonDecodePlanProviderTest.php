@@ -138,8 +138,8 @@ class JsonDecodePlanProviderTest extends TestCase
         $second = $provider->get($shape);
 
         $this->assertSame($first, $second);
-        $this->assertSame($first, $shape->getCachedPlan(ShapePlanCache::JSON_DECODE));
+        $this->assertSame($first, $shape->getSerdePlan(ShapePlanCache::JSON_DECODE));
         // Decode plan does not occupy the encode slot.
-        $this->assertNull($shape->getCachedPlan(ShapePlanCache::JSON_ENCODE));
+        $this->assertNull($shape->getSerdePlan(ShapePlanCache::JSON_ENCODE));
     }
 }

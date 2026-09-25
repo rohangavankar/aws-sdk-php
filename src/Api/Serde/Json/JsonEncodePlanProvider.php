@@ -25,8 +25,8 @@ final class JsonEncodePlanProvider
      */
     public function get(Shape $shape): JsonEncodePlan
     {
-        return $shape->getCachedPlan(ShapePlanCache::JSON_ENCODE)
-            ?? $shape->setCachedPlan(
+        return $shape->getSerdePlan(ShapePlanCache::JSON_ENCODE)
+            ?? $shape->cacheSerdePlan(
                 ShapePlanCache::JSON_ENCODE,
                 $this->compile($shape)
             );

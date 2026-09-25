@@ -41,14 +41,14 @@ class ShapePlanCacheTest extends TestCase
         $shape = new Shape(['type' => 'string', 'name' => 'S'], new ShapeMap([]));
         $plan = new \stdClass();
 
-        $this->assertNull($shape->getCachedPlan(ShapePlanCache::JSON_ENCODE));
+        $this->assertNull($shape->getSerdePlan(ShapePlanCache::JSON_ENCODE));
         $this->assertSame(
             $plan,
-            $shape->setCachedPlan(ShapePlanCache::JSON_ENCODE, $plan)
+            $shape->cacheSerdePlan(ShapePlanCache::JSON_ENCODE, $plan)
         );
         $this->assertSame(
             $plan,
-            $shape->getCachedPlan(ShapePlanCache::JSON_ENCODE)
+            $shape->getSerdePlan(ShapePlanCache::JSON_ENCODE)
         );
     }
 
@@ -58,11 +58,11 @@ class ShapePlanCacheTest extends TestCase
         $encode = new \stdClass();
         $decode = new \stdClass();
 
-        $shape->setCachedPlan(ShapePlanCache::JSON_ENCODE, $encode);
-        $shape->setCachedPlan(ShapePlanCache::JSON_DECODE, $decode);
+        $shape->cacheSerdePlan(ShapePlanCache::JSON_ENCODE, $encode);
+        $shape->cacheSerdePlan(ShapePlanCache::JSON_DECODE, $decode);
 
-        $this->assertSame($encode, $shape->getCachedPlan(ShapePlanCache::JSON_ENCODE));
-        $this->assertSame($decode, $shape->getCachedPlan(ShapePlanCache::JSON_DECODE));
+        $this->assertSame($encode, $shape->getSerdePlan(ShapePlanCache::JSON_ENCODE));
+        $this->assertSame($decode, $shape->getSerdePlan(ShapePlanCache::JSON_DECODE));
     }
 
     public function testMutatingOneShapeInvalidatesPlansOnRelatedShapes()
@@ -75,38 +75,38 @@ class ShapePlanCacheTest extends TestCase
         $b = $shapeMap->resolve(['shape' => 'B']);
         $plan = new \stdClass();
 
-        $a->setCachedPlan(ShapePlanCache::JSON_ENCODE, $plan);
-        $this->assertSame($plan, $a->getCachedPlan(ShapePlanCache::JSON_ENCODE));
+        $a->cacheSerdePlan(ShapePlanCache::JSON_ENCODE, $plan);
+        $this->assertSame($plan, $a->getSerdePlan(ShapePlanCache::JSON_ENCODE));
 
         // Mutating B advances the graph generation, invalidating A's plan.
         $b['documentation'] = 'changed';
 
-        $this->assertNull($a->getCachedPlan(ShapePlanCache::JSON_ENCODE));
+        $this->assertNull($a->getSerdePlan(ShapePlanCache::JSON_ENCODE));
     }
 
     public function testMutatedShapeCanCacheAgainstNewGeneration()
     {
         $shape = new Shape(['type' => 'string', 'name' => 'S'], new ShapeMap([]));
-        $shape->setCachedPlan(ShapePlanCache::JSON_ENCODE, new \stdClass());
+        $shape->cacheSerdePlan(ShapePlanCache::JSON_ENCODE, new \stdClass());
 
         $shape['documentation'] = 'changed';
-        $this->assertNull($shape->getCachedPlan(ShapePlanCache::JSON_ENCODE));
+        $this->assertNull($shape->getSerdePlan(ShapePlanCache::JSON_ENCODE));
 
         $rebuilt = new \stdClass();
-        $shape->setCachedPlan(ShapePlanCache::JSON_ENCODE, $rebuilt);
-        $this->assertSame($rebuilt, $shape->getCachedPlan(ShapePlanCache::JSON_ENCODE));
+        $shape->cacheSerdePlan(ShapePlanCache::JSON_ENCODE, $rebuilt);
+        $this->assertSame($rebuilt, $shape->getSerdePlan(ShapePlanCache::JSON_ENCODE));
     }
 
     public function testMutatingChildMemberLocationNameClearsResolvedMembersAndPlans()
     {
         $struct = $this->structShape();
-        $struct->setCachedPlan(ShapePlanCache::JSON_ENCODE, new \stdClass());
+        $struct->cacheSerdePlan(ShapePlanCache::JSON_ENCODE, new \stdClass());
 
         $member = $struct->getMember('A');
         $member['locationName'] = 'renamed';
 
         // The parent's plan is stale after a related-shape mutation.
-        $this->assertNull($struct->getCachedPlan(ShapePlanCache::JSON_ENCODE));
+        $this->assertNull($struct->getSerdePlan(ShapePlanCache::JSON_ENCODE));
     }
 
     public function testReplacingStructureMembersRebuildsResolvedMembers()
@@ -162,10 +162,10 @@ class ShapePlanCacheTest extends TestCase
         $operation = $service->getOperation('Foo');
         $plan = new \stdClass();
 
-        $operation->setCachedPlan(ShapePlanCache::HTTP_REQUEST_BINDINGS, $plan);
+        $operation->cacheSerdePlan(ShapePlanCache::HTTP_REQUEST_BINDINGS, $plan);
         $this->assertSame(
             $plan,
-            $operation->getCachedPlan(ShapePlanCache::HTTP_REQUEST_BINDINGS)
+            $operation->getSerdePlan(ShapePlanCache::HTTP_REQUEST_BINDINGS)
         );
     }
 
@@ -191,13 +191,13 @@ class ShapePlanCacheTest extends TestCase
         $shape = (new \ReflectionClass(Shape::class))->newInstanceWithoutConstructor();
         $plan = new \stdClass();
 
-        $this->assertNull($shape->getCachedPlan(ShapePlanCache::JSON_ENCODE));
-        $shape->setCachedPlan(ShapePlanCache::JSON_ENCODE, $plan);
-        $this->assertSame($plan, $shape->getCachedPlan(ShapePlanCache::JSON_ENCODE));
+        $this->assertNull($shape->getSerdePlan(ShapePlanCache::JSON_ENCODE));
+        $shape->cacheSerdePlan(ShapePlanCache::JSON_ENCODE, $plan);
+        $this->assertSame($plan, $shape->getSerdePlan(ShapePlanCache::JSON_ENCODE));
 
         // Mutation must not fault when no ShapeMap is present.
         $shape['documentation'] = 'changed';
-        $this->assertNull($shape->getCachedPlan(ShapePlanCache::JSON_ENCODE));
+        $this->assertNull($shape->getSerdePlan(ShapePlanCache::JSON_ENCODE));
     }
 
     private function structShape(): StructureShape

@@ -31,8 +31,8 @@ final class XmlEncodePlanProvider
      */
     public function get(Shape $shape): XmlEncodePlan
     {
-        return $shape->getCachedPlan(ShapePlanCache::XML_ENCODE)
-            ?? $shape->setCachedPlan(
+        return $shape->getSerdePlan(ShapePlanCache::XML_ENCODE)
+            ?? $shape->cacheSerdePlan(
                 ShapePlanCache::XML_ENCODE,
                 $this->compile($shape)
             );

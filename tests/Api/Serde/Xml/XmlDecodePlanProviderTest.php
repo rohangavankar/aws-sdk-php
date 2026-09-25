@@ -207,8 +207,8 @@ class XmlDecodePlanProviderTest extends TestCase
 
         $first = $provider->get($shape);
         $this->assertSame($first, $provider->get($shape));
-        $this->assertSame($first, $shape->getCachedPlan(ShapePlanCache::XML_DECODE));
+        $this->assertSame($first, $shape->getSerdePlan(ShapePlanCache::XML_DECODE));
         // Does not collide with the XML encode slot.
-        $this->assertNull($shape->getCachedPlan(ShapePlanCache::XML_ENCODE));
+        $this->assertNull($shape->getSerdePlan(ShapePlanCache::XML_ENCODE));
     }
 }

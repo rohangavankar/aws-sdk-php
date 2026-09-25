@@ -194,8 +194,8 @@ class XmlEncodePlanProviderTest extends TestCase
         $second = $provider->get($shape);
 
         $this->assertSame($first, $second);
-        $this->assertSame($first, $shape->getCachedPlan(ShapePlanCache::XML_ENCODE));
+        $this->assertSame($first, $shape->getSerdePlan(ShapePlanCache::XML_ENCODE));
         // Does not collide with the JSON encode slot.
-        $this->assertNull($shape->getCachedPlan(ShapePlanCache::JSON_ENCODE));
+        $this->assertNull($shape->getSerdePlan(ShapePlanCache::JSON_ENCODE));
     }
 }

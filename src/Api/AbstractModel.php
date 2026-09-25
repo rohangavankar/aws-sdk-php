@@ -45,7 +45,7 @@ abstract class AbstractModel implements \ArrayAccess
      * @return mixed|null
      * @internal
      */
-    public function getCachedPlan($slot)
+    public function getSerdePlan($slot)
     {
         $this->syncPlanGeneration();
 
@@ -63,7 +63,7 @@ abstract class AbstractModel implements \ArrayAccess
      * @return mixed The cached plan.
      * @internal
      */
-    public function setCachedPlan($slot, $plan)
+    public function cacheSerdePlan($slot, $plan)
     {
         $this->syncPlanGeneration();
         $this->cachedPlans[$slot] = $plan;

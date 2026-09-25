@@ -30,8 +30,8 @@ final class XmlDecodePlanProvider
      */
     public function get(Shape $shape): XmlDecodePlan
     {
-        return $shape->getCachedPlan(ShapePlanCache::XML_DECODE)
-            ?? $shape->setCachedPlan(
+        return $shape->getSerdePlan(ShapePlanCache::XML_DECODE)
+            ?? $shape->cacheSerdePlan(
                 ShapePlanCache::XML_DECODE,
                 $this->compile($shape)
             );

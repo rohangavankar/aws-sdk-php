@@ -25,8 +25,8 @@ final class JsonDecodePlanProvider
      */
     public function get(Shape $shape): JsonDecodePlan
     {
-        return $shape->getCachedPlan(ShapePlanCache::JSON_DECODE)
-            ?? $shape->setCachedPlan(
+        return $shape->getSerdePlan(ShapePlanCache::JSON_DECODE)
+            ?? $shape->cacheSerdePlan(
                 ShapePlanCache::JSON_DECODE,
                 $this->compile($shape)
             );
