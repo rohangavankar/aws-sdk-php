@@ -217,6 +217,7 @@ class XmlParser
         $target = [];
 
         foreach ($shape->getMembers() as $name => $member) {
+            // Extract the name of the XML node
             $node = $this->memberKey($member, $name);
             if (isset($value->{$node})) {
                 $target[$name] = $this->dispatch($member, $value->{$node});
@@ -245,6 +246,7 @@ class XmlParser
 
     private function memberKey(Shape $shape, $name)
     {
+        // Check if locationName came from shape definition
         if ($shape instanceof StructureShape && isset($shape['locationName'])) {
             $originalDef = $shape->getOriginalDefinition($shape->getName());
 
