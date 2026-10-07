@@ -142,6 +142,9 @@ abstract class AbstractModel implements \ArrayAccess
     {
         $this->clearResolvedModelCache();
         $this->cachedPlans = [];
+        // The constructor copies contextParam out of the definition, so keep
+        // the copy in step with direct mutation or removal.
+        $this->contextParam = $this->definition['contextParam'] ?? null;
 
         if ($this->shapeMap !== null) {
             $this->shapeMap->incrementGeneration();
