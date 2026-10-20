@@ -4816,6 +4816,10 @@
         "attributes":{"shape":"BatchPutAttributeItems"}
       }
     },
+    "BlueprintCategory":{
+      "type":"string",
+      "enum":["TOOLING"]
+    },
     "Boolean":{
       "type":"boolean",
       "box":true
@@ -5205,7 +5209,10 @@
         "AMAZON_Q",
         "MLFLOW",
         "VPC",
-        "GIT"
+        "GIT",
+        "ICEBERGRESTCATALOG",
+        "SNOWFLAKEICEBERGRESTCATALOG",
+        "DATABRICKSICEBERGRESTCATALOG"
       ]
     },
     "ConnectivityProperties":{
@@ -5915,7 +5922,8 @@
         "name":{"shape":"EnvironmentBlueprintName"},
         "description":{"shape":"Description"},
         "provisioningProperties":{"shape":"ProvisioningProperties"},
-        "userParameters":{"shape":"CustomParameterList"}
+        "userParameters":{"shape":"CustomParameterList"},
+        "blueprintCategory":{"shape":"BlueprintCategory"}
       }
     },
     "CreateEnvironmentBlueprintOutput":{
@@ -5935,6 +5943,7 @@
         "deploymentProperties":{"shape":"DeploymentProperties"},
         "userParameters":{"shape":"CustomParameterList"},
         "glossaryTerms":{"shape":"GlossaryTerms"},
+        "blueprintCategory":{"shape":"BlueprintCategory"},
         "createdAt":{"shape":"SyntheticTimestamp_date_time"},
         "updatedAt":{"shape":"SyntheticTimestamp_date_time"}
       }
@@ -8358,7 +8367,8 @@
         "provider":{"shape":"String"},
         "provisioningProperties":{"shape":"ProvisioningProperties"},
         "createdAt":{"shape":"SyntheticTimestamp_date_time"},
-        "updatedAt":{"shape":"SyntheticTimestamp_date_time"}
+        "updatedAt":{"shape":"SyntheticTimestamp_date_time"},
+        "blueprintCategory":{"shape":"BlueprintCategory"}
       }
     },
     "EnvironmentConfig":{
@@ -9503,6 +9513,7 @@
         "deploymentProperties":{"shape":"DeploymentProperties"},
         "userParameters":{"shape":"CustomParameterList"},
         "glossaryTerms":{"shape":"GlossaryTerms"},
+        "blueprintCategory":{"shape":"BlueprintCategory"},
         "createdAt":{"shape":"SyntheticTimestamp_date_time"},
         "updatedAt":{"shape":"SyntheticTimestamp_date_time"}
       }
@@ -10189,6 +10200,7 @@
         "timeoutConfiguration":{"shape":"TimeoutConfig"},
         "environmentConfiguration":{"shape":"EnvironmentConfig"},
         "storageConfiguration":{"shape":"StorageConfig"},
+        "notificationConfiguration":{"shape":"NotificationConfig"},
         "triggerSource":{"shape":"TriggerSource"},
         "error":{"shape":"NotebookRunError"},
         "createdAt":{"shape":"CreatedAt"},
@@ -11006,7 +11018,10 @@
         "SAPHANA",
         "SQLSERVER",
         "TERADATA",
-        "VERTICA"
+        "VERTICA",
+        "ICEBERGRESTCATALOG",
+        "SNOWFLAKEICEBERGRESTCATALOG",
+        "DATABRICKSICEBERGRESTCATALOG"
       ]
     },
     "GlueOAuth2Credentials":{
@@ -11278,7 +11293,8 @@
     "IamPropertiesInput":{
       "type":"structure",
       "members":{
-        "glueLineageSyncEnabled":{"shape":"Boolean"}
+        "glueLineageSyncEnabled":{"shape":"Boolean"},
+        "roleArn":{"shape":"RoleArn"}
       }
     },
     "IamPropertiesOutput":{
@@ -14047,6 +14063,13 @@
         "SQL"
       ]
     },
+    "NotificationConfig":{
+      "type":"structure",
+      "required":["notifyOn"],
+      "members":{
+        "notifyOn":{"shape":"NotifyOnStates"}
+      }
+    },
     "NotificationOutput":{
       "type":"structure",
       "required":[
@@ -14114,6 +14137,24 @@
     "NotificationsList":{
       "type":"list",
       "member":{"shape":"NotificationOutput"}
+    },
+    "NotifyOnState":{
+      "type":"string",
+      "enum":[
+        "SUCCEEDED",
+        "FAILED",
+        "STOPPED",
+        "QUEUED",
+        "STARTING",
+        "RUNNING",
+        "STOPPING"
+      ]
+    },
+    "NotifyOnStates":{
+      "type":"list",
+      "member":{"shape":"NotifyOnState"},
+      "max":7,
+      "min":0
     },
     "OAuth2ClientApplication":{
       "type":"structure",
@@ -15628,10 +15669,41 @@
       "min":0,
       "pattern":"[a-zA-Z0-9\\-]+"
     },
+    "S3BucketName":{
+      "type":"string",
+      "max":63,
+      "min":3,
+      "pattern":"[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]",
+      "sensitive":true
+    },
     "S3Destination":{
       "type":"structure",
       "members":{
         "uri":{"shape":"NotebookS3Uri"}
+      }
+    },
+    "S3File":{
+      "type":"structure",
+      "required":["key"],
+      "members":{
+        "key":{"shape":"S3ObjectKey"}
+      }
+    },
+    "S3FileList":{
+      "type":"list",
+      "member":{"shape":"S3File"},
+      "max":100,
+      "min":1
+    },
+    "S3FilesLocation":{
+      "type":"structure",
+      "required":[
+        "bucket",
+        "fileList"
+      ],
+      "members":{
+        "bucket":{"shape":"S3BucketName"},
+        "fileList":{"shape":"S3FileList"}
       }
     },
     "S3Location":{
@@ -15645,6 +15717,12 @@
       "member":{"shape":"S3Location"},
       "max":20,
       "min":0
+    },
+    "S3ObjectKey":{
+      "type":"string",
+      "max":1024,
+      "min":1,
+      "sensitive":true
     },
     "S3Path":{
       "type":"string",
@@ -16153,7 +16231,8 @@
     "SourceLocation":{
       "type":"structure",
       "members":{
-        "s3":{"shape":"S3SourceLocation"}
+        "s3":{"shape":"S3SourceLocation"},
+        "s3Files":{"shape":"S3FilesLocation"}
       },
       "union":true
     },
@@ -16517,6 +16596,7 @@
         "sourceLocation":{"shape":"SourceLocation"},
         "name":{"shape":"NotebookName"},
         "description":{"shape":"Description"},
+        "type":{"shape":"NotebookType"},
         "clientToken":{
           "shape":"ClientToken",
           "idempotencyToken":true
@@ -16532,6 +16612,7 @@
         "owningProjectId":{"shape":"ProjectId"},
         "name":{"shape":"NotebookName"},
         "description":{"shape":"Description"},
+        "type":{"shape":"NotebookType"},
         "sourceLocation":{"shape":"SourceLocation"},
         "createdAt":{"shape":"CreatedAt"},
         "createdBy":{"shape":"CreatedBy"}
@@ -16556,6 +16637,7 @@
         "computeConfiguration":{"shape":"ComputeConfig"},
         "networkConfiguration":{"shape":"NetworkConfig"},
         "timeoutConfiguration":{"shape":"TimeoutConfig"},
+        "notificationConfiguration":{"shape":"NotificationConfig"},
         "triggerSource":{"shape":"TriggerSource"},
         "metadata":{"shape":"Metadata"},
         "parameters":{"shape":"Parameters"},
@@ -16589,6 +16671,7 @@
         "timeoutConfiguration":{"shape":"TimeoutConfig"},
         "environmentConfiguration":{"shape":"EnvironmentConfig"},
         "storageConfiguration":{"shape":"StorageConfig"},
+        "notificationConfiguration":{"shape":"NotificationConfig"},
         "triggerSource":{"shape":"TriggerSource"},
         "error":{"shape":"NotebookRunError"},
         "createdAt":{"shape":"CreatedAt"},
@@ -17860,7 +17943,8 @@
         },
         "description":{"shape":"String"},
         "provisioningProperties":{"shape":"ProvisioningProperties"},
-        "userParameters":{"shape":"CustomParameterList"}
+        "userParameters":{"shape":"CustomParameterList"},
+        "blueprintCategory":{"shape":"BlueprintCategory"}
       }
     },
     "UpdateEnvironmentBlueprintOutput":{
@@ -17880,6 +17964,7 @@
         "deploymentProperties":{"shape":"DeploymentProperties"},
         "userParameters":{"shape":"CustomParameterList"},
         "glossaryTerms":{"shape":"GlossaryTerms"},
+        "blueprintCategory":{"shape":"BlueprintCategory"},
         "createdAt":{"shape":"SyntheticTimestamp_date_time"},
         "updatedAt":{"shape":"SyntheticTimestamp_date_time"}
       }

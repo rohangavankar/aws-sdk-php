@@ -342,7 +342,7 @@ use Aws\AwsClient;
  *         athenaProperties?: array{workgroupName?: string, ...},
  *         glueProperties?: array{glueConnectionInput?: array, ...},
  *         hyperPodProperties?: array{clusterName?: string, ...},
- *         iamProperties?: array{glueLineageSyncEnabled?: bool, ...},
+ *         iamProperties?: array{glueLineageSyncEnabled?: bool, roleArn?: string, ...},
  *         redshiftProperties?: array{
  *             storage?: array,
  *             databaseName?: string,
@@ -409,7 +409,7 @@ use Aws\AwsClient;
  *         athenaProperties?: array{workgroupName?: string, ...},
  *         glueProperties?: array{glueConnectionInput?: array, ...},
  *         hyperPodProperties?: array{clusterName?: string, ...},
- *         iamProperties?: array{glueLineageSyncEnabled?: bool, ...},
+ *         iamProperties?: array{glueLineageSyncEnabled?: bool, roleArn?: string, ...},
  *         redshiftProperties?: array{
  *             storage?: array,
  *             databaseName?: string,
@@ -701,6 +701,7 @@ use Aws\AwsClient;
  *         isUpdateSupported?: bool,
  *         ...,
  *     }>,
+ *     blueprintCategory?: 'TOOLING',
  *     ...,
  * } $args = [])
  * @method \GuzzleHttp\Promise\Promise createEnvironmentBlueprintAsync(array $args = [])
@@ -719,6 +720,7 @@ use Aws\AwsClient;
  *         isUpdateSupported?: bool,
  *         ...,
  *     }>,
+ *     blueprintCategory?: 'TOOLING',
  *     ...,
  * } $args = [])
  * @method \Aws\Result createEnvironmentProfile(array $args = [])
@@ -1529,7 +1531,7 @@ use Aws\AwsClient;
  *     name?: string,
  *     environmentIdentifier?: string,
  *     projectIdentifier?: string,
- *     type?: 'AMAZON_Q'|'ATHENA'|'BIGQUERY'|'DATABRICKS'|'DOCUMENTDB'|'DYNAMODB'|'GIT'|'HYPERPOD'|'IAM'|'MLFLOW'|'MYSQL'|'OPENSEARCH'|'ORACLE'|'POSTGRESQL'|'REDSHIFT'|'S3'|'SAPHANA'|'SNOWFLAKE'|'SPARK'|'SQLSERVER'|'TERADATA'|'VERTICA'|'VPC'|'WORKFLOWS_MWAA',
+ *     type?: 'AMAZON_Q'|'ATHENA'|'BIGQUERY'|'DATABRICKS'|'DATABRICKSICEBERGRESTCATALOG'|'DOCUMENTDB'|'DYNAMODB'|'GIT'|'HYPERPOD'|'IAM'|'ICEBERGRESTCATALOG'|'MLFLOW'|'MYSQL'|'OPENSEARCH'|'ORACLE'|'POSTGRESQL'|'REDSHIFT'|'S3'|'SAPHANA'|'SNOWFLAKE'|'SNOWFLAKEICEBERGRESTCATALOG'|'SPARK'|'SQLSERVER'|'TERADATA'|'VERTICA'|'VPC'|'WORKFLOWS_MWAA',
  *     scope?: 'DOMAIN'|'PROJECT',
  *     ...,
  * } $args = [])
@@ -1543,7 +1545,7 @@ use Aws\AwsClient;
  *     name?: string,
  *     environmentIdentifier?: string,
  *     projectIdentifier?: string,
- *     type?: 'AMAZON_Q'|'ATHENA'|'BIGQUERY'|'DATABRICKS'|'DOCUMENTDB'|'DYNAMODB'|'GIT'|'HYPERPOD'|'IAM'|'MLFLOW'|'MYSQL'|'OPENSEARCH'|'ORACLE'|'POSTGRESQL'|'REDSHIFT'|'S3'|'SAPHANA'|'SNOWFLAKE'|'SPARK'|'SQLSERVER'|'TERADATA'|'VERTICA'|'VPC'|'WORKFLOWS_MWAA',
+ *     type?: 'AMAZON_Q'|'ATHENA'|'BIGQUERY'|'DATABRICKS'|'DATABRICKSICEBERGRESTCATALOG'|'DOCUMENTDB'|'DYNAMODB'|'GIT'|'HYPERPOD'|'IAM'|'ICEBERGRESTCATALOG'|'MLFLOW'|'MYSQL'|'OPENSEARCH'|'ORACLE'|'POSTGRESQL'|'REDSHIFT'|'S3'|'SAPHANA'|'SNOWFLAKE'|'SNOWFLAKEICEBERGRESTCATALOG'|'SPARK'|'SQLSERVER'|'TERADATA'|'VERTICA'|'VPC'|'WORKFLOWS_MWAA',
  *     scope?: 'DOMAIN'|'PROJECT',
  *     ...,
  * } $args = [])
@@ -2573,9 +2575,10 @@ use Aws\AwsClient;
  * @phpstan-method \Aws\Result startNotebookImport(array{
  *     domainIdentifier?: string,
  *     owningProjectIdentifier?: string,
- *     sourceLocation?: array{s3?: string, ...},
+ *     sourceLocation?: array{s3?: string, s3Files?: array{bucket?: string, fileList?: list<array>, ...}, ...},
  *     name?: string,
  *     description?: string,
+ *     type?: 'DATA'|'SQL',
  *     clientToken?: string,
  *     ...,
  * } $args = [])
@@ -2583,9 +2586,10 @@ use Aws\AwsClient;
  * @phpstan-method \GuzzleHttp\Promise\Promise startNotebookImportAsync(array{
  *     domainIdentifier?: string,
  *     owningProjectIdentifier?: string,
- *     sourceLocation?: array{s3?: string, ...},
+ *     sourceLocation?: array{s3?: string, s3Files?: array{bucket?: string, fileList?: list<array>, ...}, ...},
  *     name?: string,
  *     description?: string,
+ *     type?: 'DATA'|'SQL',
  *     clientToken?: string,
  *     ...,
  * } $args = [])
@@ -2604,6 +2608,7 @@ use Aws\AwsClient;
  *         ...,
  *     },
  *     timeoutConfiguration?: array{runTimeoutInMinutes?: int, ...},
+ *     notificationConfiguration?: array{notifyOn?: list<'FAILED'|'QUEUED'|'RUNNING'|'STARTING'|'STOPPED'|'STOPPING'|'SUCCEEDED'>, ...},
  *     triggerSource?: array{type?: 'MANUAL'|'SCHEDULED'|'WORKFLOW', name?: string, ...},
  *     metadata?: array<string, string>,
  *     parameters?: array<string, string>,
@@ -2625,6 +2630,7 @@ use Aws\AwsClient;
  *         ...,
  *     },
  *     timeoutConfiguration?: array{runTimeoutInMinutes?: int, ...},
+ *     notificationConfiguration?: array{notifyOn?: list<'FAILED'|'QUEUED'|'RUNNING'|'STARTING'|'STOPPED'|'STOPPING'|'SUCCEEDED'>, ...},
  *     triggerSource?: array{type?: 'MANUAL'|'SCHEDULED'|'WORKFLOW', name?: string, ...},
  *     metadata?: array<string, string>,
  *     parameters?: array<string, string>,
@@ -2635,7 +2641,7 @@ use Aws\AwsClient;
  * @phpstan-method \Aws\Result startNotebookSync(array{
  *     domainIdentifier?: string,
  *     owningProjectIdentifier?: string,
- *     sourceLocation?: array{s3?: string, ...},
+ *     sourceLocation?: array{s3?: string, s3Files?: array{bucket?: string, fileList?: list<array>, ...}, ...},
  *     gitMetadata?: array{
  *         connectionId?: string,
  *         repository?: string,
@@ -2656,7 +2662,7 @@ use Aws\AwsClient;
  * @phpstan-method \GuzzleHttp\Promise\Promise startNotebookSyncAsync(array{
  *     domainIdentifier?: string,
  *     owningProjectIdentifier?: string,
- *     sourceLocation?: array{s3?: string, ...},
+ *     sourceLocation?: array{s3?: string, s3Files?: array{bucket?: string, fileList?: list<array>, ...}, ...},
  *     gitMetadata?: array{
  *         connectionId?: string,
  *         repository?: string,
@@ -2983,6 +2989,7 @@ use Aws\AwsClient;
  *         isUpdateSupported?: bool,
  *         ...,
  *     }>,
+ *     blueprintCategory?: 'TOOLING',
  *     ...,
  * } $args = [])
  * @method \GuzzleHttp\Promise\Promise updateEnvironmentBlueprintAsync(array $args = [])
@@ -3001,6 +3008,7 @@ use Aws\AwsClient;
  *         isUpdateSupported?: bool,
  *         ...,
  *     }>,
+ *     blueprintCategory?: 'TOOLING',
  *     ...,
  * } $args = [])
  * @method \Aws\Result updateEnvironmentProfile(array $args = [])

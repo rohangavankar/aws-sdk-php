@@ -5133,7 +5133,8 @@
     "ResolvedConfiguration":{
       "type":"structure",
       "members":{
-        "loadBalancers":{"shape":"ServiceRevisionLoadBalancers"}
+        "loadBalancers":{"shape":"ServiceRevisionLoadBalancers"},
+        "vpcLatticeConfigurations":{"shape":"ServiceRevisionVpcLatticeConfigurations"}
       }
     },
     "Resource":{
@@ -5393,8 +5394,29 @@
         "namespace":{"shape":"String"},
         "services":{"shape":"ServiceConnectServiceList"},
         "logConfiguration":{"shape":"LogConfiguration"},
-        "accessLogConfiguration":{"shape":"ServiceConnectAccessLogConfiguration"}
+        "accessLogConfiguration":{"shape":"ServiceConnectAccessLogConfiguration"},
+        "containerConfigurations":{"shape":"ServiceConnectContainerConfigurations"}
       }
+    },
+    "ServiceConnectContainerConfiguration":{
+      "type":"structure",
+      "members":{
+        "logLevel":{"shape":"ServiceConnectContainerLogLevel"}
+      },
+      "union":true
+    },
+    "ServiceConnectContainerConfigurations":{
+      "type":"list",
+      "member":{"shape":"ServiceConnectContainerConfiguration"},
+      "max":10,
+      "min":0
+    },
+    "ServiceConnectContainerLogLevel":{
+      "type":"string",
+      "enum":[
+        "debug",
+        "info"
+      ]
     },
     "ServiceConnectIncludeQueryParameters":{
       "type":"string",
@@ -5721,6 +5743,17 @@
           "box":true
         }
       }
+    },
+    "ServiceRevisionVpcLatticeConfiguration":{
+      "type":"structure",
+      "members":{
+        "targetGroupArn":{"shape":"String"},
+        "productionListenerRule":{"shape":"String"}
+      }
+    },
+    "ServiceRevisionVpcLatticeConfigurations":{
+      "type":"list",
+      "member":{"shape":"ServiceRevisionVpcLatticeConfiguration"}
     },
     "ServiceRevisions":{
       "type":"list",
@@ -6697,6 +6730,14 @@
       "type":"list",
       "member":{"shape":"Volume"}
     },
+    "VpcLatticeAdvancedConfiguration":{
+      "type":"structure",
+      "members":{
+        "alternateTargetGroupArn":{"shape":"String"},
+        "productionListenerRule":{"shape":"String"},
+        "testListenerRule":{"shape":"String"}
+      }
+    },
     "VpcLatticeConfiguration":{
       "type":"structure",
       "required":[
@@ -6707,7 +6748,8 @@
       "members":{
         "roleArn":{"shape":"IAMRoleArn"},
         "targetGroupArn":{"shape":"String"},
-        "portName":{"shape":"String"}
+        "portName":{"shape":"String"},
+        "advancedConfiguration":{"shape":"VpcLatticeAdvancedConfiguration"}
       }
     },
     "VpcLatticeConfigurations":{

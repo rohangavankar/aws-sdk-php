@@ -1075,6 +1075,17 @@
       "base": null,
       "refs": {}
     },
+    "BlueprintCategory": {
+      "base": null,
+      "refs": {
+        "CreateEnvironmentBlueprintInput$blueprintCategory": "<p>The category of the Amazon DataZone blueprint. The only valid value is <code>TOOLING</code>, which creates a blueprint that provisions the tooling resources of a project.</p>",
+        "CreateEnvironmentBlueprintOutput$blueprintCategory": "<p>The category of the Amazon DataZone blueprint. The only valid value is <code>TOOLING</code>, which indicates a blueprint that provisions the tooling resources of a project.</p>",
+        "EnvironmentBlueprintSummary$blueprintCategory": "<p>The category of the environment blueprint. The only valid value is <code>TOOLING</code>.</p>",
+        "GetEnvironmentBlueprintOutput$blueprintCategory": "<p>The category of this Amazon DataZone blueprint. The only valid value is <code>TOOLING</code>, which indicates a blueprint that provisions the tooling resources of a project.</p>",
+        "UpdateEnvironmentBlueprintInput$blueprintCategory": "<p>The category to update. The only valid value is <code>TOOLING</code>.</p>",
+        "UpdateEnvironmentBlueprintOutput$blueprintCategory": "<p>The category of the environment blueprint. The only valid value is <code>TOOLING</code>.</p>"
+      }
+    },
     "Boolean": {
       "base": null,
       "refs": {
@@ -6425,8 +6436,18 @@
         "GetNotebookOutput$type": "<p>The type of the notebook.</p>",
         "ListNotebooksInput$type": "<p>The type to filter notebooks by.</p>",
         "NotebookSummary$type": "<p>The type of the notebook.</p>",
+        "StartNotebookImportInput$type": "<p>The type of the notebook to import. If not specified, defaults to <code>DATA</code>.</p>",
+        "StartNotebookImportOutput$type": "<p>The type of the imported notebook.</p>",
         "UpdateNotebookInput$type": "<p>The updated type of the notebook.</p>",
         "UpdateNotebookOutput$type": "<p>The type of the notebook.</p>"
+      }
+    },
+    "NotificationConfig": {
+      "base": "<p>The notification configuration for a notebook run in Amazon SageMaker Unified Studio.</p>",
+      "refs": {
+        "GetNotebookRunOutput$notificationConfiguration": "<p>The notification configuration of the notebook run, including the notebook run states that trigger notifications.</p>",
+        "StartNotebookRunInput$notificationConfiguration": "<p>The notification configuration for the notebook run. Use this to specify the notebook run states that trigger notifications.</p>",
+        "StartNotebookRunOutput$notificationConfiguration": "<p>The notification configuration of the notebook run, including the notebook run states that trigger notifications.</p>"
       }
     },
     "NotificationOutput": {
@@ -6470,6 +6491,18 @@
       "base": null,
       "refs": {
         "ListNotificationsOutput$notifications": "<p>The results of the <code>ListNotifications</code> action.</p>"
+      }
+    },
+    "NotifyOnState": {
+      "base": "<p>A notebook run state that triggers a notification in Amazon SageMaker Unified Studio.</p>",
+      "refs": {
+        "NotifyOnStates$member": null
+      }
+    },
+    "NotifyOnStates": {
+      "base": null,
+      "refs": {
+        "NotificationConfig$notifyOn": "<p>Notebook run states that trigger notifications. Ordering is not significant.</p>"
       }
     },
     "OAuth2ClientApplication": {
@@ -7735,6 +7768,7 @@
         "GetDomainOutput$serviceRole": "<p>The service role of the domain.</p>",
         "GetEnvironmentBlueprintConfigurationOutput$provisioningRoleArn": "<p>The ARN of the provisioning role with which this blueprint is created.</p>",
         "GetEnvironmentBlueprintConfigurationOutput$manageAccessRoleArn": "<p>The ARN of the manage access role with which this blueprint is created.</p>",
+        "IamPropertiesInput$roleArn": "<p>The ARN of the IAM role to associate with the connection as the project user role. To use this operation, you must have <code>iam:PassRole</code> permission for this role.</p>",
         "LakeFormationConfiguration$locationRegistrationRole": "<p>The role that is used to manage read/write access to the chosen Amazon S3 bucket(s) for Data Lake using Amazon Web Services Lake Formation hybrid access mode.</p>",
         "PutEnvironmentBlueprintConfigurationInput$provisioningRoleArn": "<p>The ARN of the provisioning role.</p>",
         "PutEnvironmentBlueprintConfigurationInput$manageAccessRoleArn": "<p>The ARN of the manage access role.</p>",
@@ -7909,10 +7943,34 @@
         "S3PropertiesPatch$s3AccessGrantLocationId": "<p>The Amazon S3 Access Grant location ID that's part of the Amazon S3 properties patch of a connection.</p>"
       }
     },
+    "S3BucketName": {
+      "base": null,
+      "refs": {
+        "S3FilesLocation$bucket": "<p>The name of the Amazon Simple Storage Service bucket that contains the files to import.</p>"
+      }
+    },
     "S3Destination": {
       "base": "<p>The Amazon Simple Storage Service destination for a notebook export in Amazon SageMaker Unified Studio.</p>",
       "refs": {
         "OutputLocation$s3": "<p>The Amazon Simple Storage Service destination for the notebook export.</p>"
+      }
+    },
+    "S3File": {
+      "base": "<p>A single Amazon Simple Storage Service object to import as a notebook cell.</p>",
+      "refs": {
+        "S3FileList$member": null
+      }
+    },
+    "S3FileList": {
+      "base": null,
+      "refs": {
+        "S3FilesLocation$fileList": "<p>The files to import. Cells are created in the order in which you list the files. You can specify between 1 and 100 files.</p>"
+      }
+    },
+    "S3FilesLocation": {
+      "base": "<p>The Amazon Simple Storage Service objects to import as the cells of a notebook, specified as a bucket and an ordered list of object keys.</p>",
+      "refs": {
+        "SourceLocation$s3Files": "<p>The Amazon Simple Storage Service objects to import as the notebook's cells. One cell is created for each object, in the order in which you list them.</p>"
       }
     },
     "S3Location": {
@@ -7925,6 +7983,12 @@
       "base": null,
       "refs": {
         "LakeFormationConfiguration$locationRegistrationExcludeS3Locations": "<p>Specifies certain Amazon S3 locations if you do not want Amazon DataZone to automatically register them in hybrid mode. </p>"
+      }
+    },
+    "S3ObjectKey": {
+      "base": null,
+      "refs": {
+        "S3File$key": "<p>The key of the Amazon Simple Storage Service object to import.</p>"
       }
     },
     "S3Path": {
@@ -8339,7 +8403,7 @@
     "SourceLocation": {
       "base": "<p>The source location for a notebook import in Amazon SageMaker Unified Studio.</p>",
       "refs": {
-        "StartNotebookImportInput$sourceLocation": "<p>The source location of the notebook to import. This specifies the Amazon Simple Storage Service URI of the notebook file.</p>",
+        "StartNotebookImportInput$sourceLocation": "<p>The source location of the notebook to import. Specify either a single Amazon Simple Storage Service URI, or a list of objects to import as the notebook's cells.</p>",
         "StartNotebookImportOutput$sourceLocation": "<p>The source location from which the notebook was imported.</p>",
         "StartNotebookSyncInput$sourceLocation": "<p>The source location of the notebook to sync. This specifies the Amazon Simple Storage Service URI of the notebook file.</p>",
         "StartNotebookSyncOutput$sourceLocation": "<p>The source location from which the notebook was synced.</p>"

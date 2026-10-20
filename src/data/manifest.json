@@ -642,6 +642,14 @@
         },
         "serviceIdentifier": "cloudtrail"
     },
+    "cloudwatchomni": {
+        "namespace": "CloudWatchOmni",
+        "versions": {
+            "latest": "2025-01-01",
+            "2025-01-01": "2025-01-01"
+        },
+        "serviceIdentifier": "cloudwatchomni"
+    },
     "codeartifact": {
         "namespace": "CodeArtifact",
         "versions": {
@@ -1231,6 +1239,14 @@
         },
         "serviceIdentifier": "emr_serverless"
     },
+    "endusermessaging": {
+        "namespace": "EndUserMessaging",
+        "versions": {
+            "latest": "2026-09-21",
+            "2026-09-21": "2026-09-21"
+        },
+        "serviceIdentifier": "endusermessaging"
+    },
     "entitlement.marketplace": {
         "namespace": "MarketplaceEntitlementService",
         "versions": {
@@ -1262,6 +1278,14 @@
             "2015-10-07": "2015-10-07"
         },
         "serviceIdentifier": "eventbridge"
+    },
+    "eventbridgev2": {
+        "namespace": "EventBridgeV2",
+        "versions": {
+            "latest": "2025-05-15",
+            "2025-05-15": "2025-05-15"
+        },
+        "serviceIdentifier": "eventbridgev2"
     },
     "events": {
         "namespace": "CloudWatchEvents",
@@ -1817,6 +1841,14 @@
         },
         "serviceIdentifier": "lambda_microvms"
     },
+    "lambda-web": {
+        "namespace": "LambdaWeb",
+        "versions": {
+            "latest": "2025-03-07",
+            "2025-03-07": "2025-03-07"
+        },
+        "serviceIdentifier": "lambda_web"
+    },
     "lambda": {
         "namespace": "Lambda",
         "versions": {
@@ -2224,6 +2256,14 @@
             "2020-11-12": "2020-11-12"
         },
         "serviceIdentifier": "network_firewall"
+    },
+    "network-security-manager": {
+        "namespace": "NetworkSecurityManager",
+        "versions": {
+            "latest": "2025-10-30",
+            "2025-10-30": "2025-10-30"
+        },
+        "serviceIdentifier": "network_security_manager"
     },
     "networkflowmonitor": {
         "namespace": "NetworkFlowMonitor",
@@ -2882,6 +2922,14 @@
         },
         "serviceIdentifier": "sagemakerjobruntime"
     },
+    "sagemakertrainingsessionruntime": {
+        "namespace": "SageMakerTrainingSessionRuntime",
+        "versions": {
+            "latest": "2025-02-10",
+            "2025-02-10": "2025-02-10"
+        },
+        "serviceIdentifier": "sagemakertrainingsessionruntime"
+    },
     "savingsplans": {
         "namespace": "SavingsPlans",
         "versions": {
@@ -3281,14 +3329,6 @@
             "2018-11-01": "2018-11-01"
         },
         "serviceIdentifier": "timestream_write"
-    },
-    "tnb": {
-        "namespace": "Tnb",
-        "versions": {
-            "latest": "2008-10-21",
-            "2008-10-21": "2008-10-21"
-        },
-        "serviceIdentifier": "tnb"
     },
     "transcribe": {
         "namespace": "TranscribeService",
